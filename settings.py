@@ -14,7 +14,16 @@ COLUMNS = 10
 ROWS = 20
 
 # PIECE
-BLOCK_DIMENSION = WIDTH_FIELD// 10
+BLOCK_DIMENSION = WIDTH_FIELD // 10
+PIECES = {
+    'I':[[1,1,1,1]],
+    'O':[[1,1],[1,1]],
+    'T':[[1,1,1],[0,1,0]],
+    'L':[[1,0],[1,0],[1,1]],
+    'J':[[0,1],[0,1],[1,1]],
+    'S':[[0,1,1],[1,1,0]],
+    'Z':[[1,1,0],[0,1,1]]
+}
 
 # SURFACES COLOR
 MAIN_SCREEN_SURFACE_COLOR = (0,0,0)
@@ -22,3 +31,16 @@ FIELD_SURFACE_COLOR = (25,123,0)
 LINE_SURFACE_COLOR = (0,255,0)
 LINE_SURFACE_ALPHA = 120
 LINE_COLOR = (50,50,50)
+
+# PIECES COLOR
+PIECES_COLORS = [
+    (219, 67, 95),
+    (112, 216, 157),
+    (2, 168, 229),
+    (181, 10, 204),
+    (237, 218, 18),
+    (63, 198, 151),
+    (155, 13, 120),
+    (171, 129, 226),
+    (229, 145, 61)
+]

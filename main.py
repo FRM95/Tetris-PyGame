@@ -2,7 +2,6 @@ from sys import exit
 from pyautogui import size
 import pygame
 from game import Game
-from random import choice
 
 class Main:
 	
