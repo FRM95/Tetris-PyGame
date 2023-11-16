@@ -20,7 +20,6 @@ class Game:
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
         # self.active_pieces.update()
         
-
     def createScreen(self):
         """Creates PyGame main screen surface and rectangle
         """
