@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 from random import choice, randint
 from piece import Piece
 from settings import *
@@ -13,10 +14,12 @@ class Game:
         self.createPiece()
 
     def display(self):
-        self.main_screen_surface.fill((0,0,0))
+        self.main_screen_surface.fill((80,0,0))
         self.main_screen_surface.blit(self.field_surface, self.field_rect)
+        self.active_pieces.draw(self.main_screen_surface)
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
-        self.active_pieces.draw(self.field_surface)
+        # self.active_pieces.update()
+        
 
     def createScreen(self):
         """Creates PyGame main screen surface and rectangle
@@ -30,7 +33,7 @@ class Game:
         """
         self.field_surface = pygame.surface.Surface((WIDTH_FIELD, HEIGHT_FIELD)).convert_alpha()
         self.field_rect = self.field_surface.get_rect(center = (self.main_screen_rect.centerx * 0.7, self.main_screen_rect.centery))
-        self.field_surface.fill(FIELD_SURFACE_COLOR)
+        # self.field_surface.fill(FIELD_SURFACE_COLOR)
 
     def createLines(self):
         """Creates a line surface from Field Surface.
@@ -55,18 +58,35 @@ class Game:
     def createPiece(self):
         """Creates a random Piece instance.
         """
-        # random_piece = choice(list(PIECES.keys()))
+        random_piece = choice(list(PIECES.keys()))
+        random_structure = PIECES.get(random_piece)
+        random_structure = self.getRandomrotation(random_structure)
 
-        random_piece = "Z"
+        x_offset = self.getRandomOffset_x(random_structure)
+        y_offset = self.field_rect.top
 
-        self.piece = Piece(self.active_pieces)
+        self.piece = Piece(self.active_pieces, x_offset, y_offset)
         self.piece.type = random_piece
-        self.piece.structure = PIECES.get(random_piece)
+        self.piece.structure = random_structure
         self.piece.color = choice(PIECES_COLORS)
         self.piece.createPiece()
-        
-        
 
+    def getRandomOffset_x(self, structure):
+        """Creates a random offset for x axis.
+        """
+        max_structure = len(max(structure))
+        randomposition = randint(0,9)
+        if randomposition + max_structure > 10:
+            randomposition = 10 - max_structure
+        return self.field_rect.left + randomposition * BLOCK_DIMENSION
+    
+    def getRandomrotation(self, structure):
+        """Creates a random rotaed structure.
+        """
+        rotation = randint(1,4)
+        array_structure = np.array(structure)
+        array_structure = np.rot90(array_structure, k=-rotation)
+        return array_structure.tolist()
         
 
         
