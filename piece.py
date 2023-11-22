@@ -4,26 +4,23 @@ from settings import *
 
 class Piece(pygame.sprite.Sprite):
 
-    def __init__(self, group, x_offset, y_offset, time_lapse = DEFAULT_TIME_LAPSE) -> None:
+    def __init__(self, group, field_rect, initial_x:int = 0, initial_y:int = 0, time_lapse:float = DEFAULT_TIME_LAPSE) -> None:
         super().__init__(group)
         self.structure = None
         self.color = None
-        self.rect = None
-        self.image = None
         self.type = None
-        self.x = 0
-        self.y = 0
-        self.x_offset = x_offset
-        self.y_offset = y_offset
+        self.field_rect = field_rect
+        self.x = initial_x
+        self.y = initial_y
         self.time_lapse = time_lapse
-        self.limit_x = None
-        self.limit_y = None
-        self.final = False
 
     def createPiece(self):
         self.createImage()
         self.createRect()
         self.time_movement = 0
+        self.limit_x = (self.field_rect.left, self.field_rect.right)
+        self.limit_y = (self.field_rect.top, self.field_rect.bottom)
+        self.final = False
 
     def createImage(self):
         width = len(self.structure[0]) * BLOCK_DIMENSION
@@ -33,6 +30,8 @@ class Piece(pygame.sprite.Sprite):
         self.image.set_colorkey((0,255,0))
 
     def createRect(self):
+        self.x_offset = self.field_rect.left
+        self.y_offset = self.field_rect.top
         for i_row, row in enumerate(self.structure):
             for i_col, col in enumerate(row):
                 if col == 1:
@@ -76,7 +75,6 @@ class Piece(pygame.sprite.Sprite):
             return allowed_movement
     
     def checkCollision(self):
-
         pass
 
     def pieceFall(self):
