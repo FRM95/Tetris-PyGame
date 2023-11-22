@@ -15,10 +15,22 @@ class Main:
 
 		while True:
 			for event in pygame.event.get():
+
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					exit()
 
+				if event.type == pygame.KEYDOWN:
+
+					if event.key == pygame.K_a:
+						self.game.keyboardInput('LEFT')
+
+					if event.key == pygame.K_d:
+						self.game.keyboardInput('RIGHT')
+
+					if event.key == pygame.K_s:
+						self.game.keyboardInput('DOWN')
+	
 			# display 
 			self.game.display()
 

@@ -4,7 +4,7 @@ from settings import *
 
 class Piece(pygame.sprite.Sprite):
 
-    def __init__(self, group, x_offset, y_offset) -> None:
+    def __init__(self, group, x_offset, y_offset, time_lapse = DEFAULT_TIME_LAPSE) -> None:
         super().__init__(group)
         self.structure = None
         self.color = None
@@ -15,10 +15,15 @@ class Piece(pygame.sprite.Sprite):
         self.y = 0
         self.x_offset = x_offset
         self.y_offset = y_offset
+        self.time_lapse = time_lapse
+        self.limit_x = None
+        self.limit_y = None
+        self.final = False
 
     def createPiece(self):
         self.createImage()
         self.createRect()
+        self.time_movement = 0
 
     def createImage(self):
         width = len(self.structure[0]) * BLOCK_DIMENSION
@@ -32,27 +37,58 @@ class Piece(pygame.sprite.Sprite):
             for i_col, col in enumerate(row):
                 if col == 1:
                     pygame.draw.rect(self.image, self.color, 
-                        (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION))
-                    
+                        (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION))          
         self.rect = self.image.get_rect(topleft = (self.x * BLOCK_DIMENSION + self.x_offset, self.y * BLOCK_DIMENSION + self.y_offset))
+        self.mask = pygame.mask.from_surface(self.image)
 
     def movePiece(self, movement:str):
+        movement_allowed = self.movementAllowed(movement)
+        if movement_allowed:
+            match movement:
+                case 'DOWN':
+                    self.y += 1
+                case 'UP':
+                    self.y -= 1
+                case 'LEFT':
+                    self.x -= 1
+                case 'RIGHT':
+                    self.x += 1
+            self.rect.x = self.x * BLOCK_DIMENSION + self.x_offset
+            self.rect.y = self.y * BLOCK_DIMENSION + self.y_offset
+            print(self.x, self.y)
+            print('MOVEMENT DONE ' + movement)
+        return movement_allowed
+            
+    def movementAllowed(self, movement:str):
+            allowed_movement = True
+            match movement:
+                case 'DOWN':
+                    if self.rect.bottom >= self.limit_y[1]:
+                        allowed_movement = False
+                case 'UP':
+                    pass
+                case 'LEFT':
+                    if self.rect.left <= self.limit_x[0] or self.rect.bottom >= self.limit_y[1]:
+                        allowed_movement = False
+                case 'RIGHT':
+                    if self.rect.right >= self.limit_x[1] or self.rect.bottom >= self.limit_y[1]:
+                        allowed_movement = False
+            return allowed_movement
+    
+    def checkCollision(self):
 
-        match movement:
-            case 'DOWN':
-                self.y += 1
-            case 'UP':
-                self.y -= 1
-            case 'LEFT':
-                self.x -= 1
-            case 'RIGHT':
-                self.x += 1
+        pass
 
-        self.rect.x = self.x * BLOCK_DIMENSION + self.x_offset
-        self.rect.y = self.y * BLOCK_DIMENSION + self.y_offset
-
+    def pieceFall(self):
+        self.time_movement += self.time_lapse
+        if self.time_movement >= 1:
+            if not self.movePiece('DOWN'):
+                self.final = True
+            self.time_movement = 0
+            
     def update(self):
-        self.movePiece('DOWN')
-        print('movement')
+        if not self.final:
+            self.pieceFall()
+        
        
     

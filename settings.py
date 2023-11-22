@@ -24,6 +24,7 @@ PIECES = {
     'S':[[0,1,1],[1,1,0]],
     'Z':[[1,1,0],[0,1,1]]
 }
+DEFAULT_TIME_LAPSE = 0.01667
 
 # SURFACES COLOR
 MAIN_SCREEN_SURFACE_COLOR = (0,0,0)
@@ -44,5 +45,3 @@ PIECES_COLORS = [
     (171, 129, 226),
     (229, 145, 61)
 ]
-
-
