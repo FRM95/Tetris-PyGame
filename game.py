@@ -7,6 +7,7 @@ from settings import *
 class Game:
 
     def __init__(self) -> None:
+        self.id_counter = 0
         self.createScreen()
         self.createField()
         self.createLines()
@@ -21,7 +22,9 @@ class Game:
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
         self.active_pieces.update()
         if self.piece.final:
-            self.replacePiece()
+            self.updateFieldData()
+            self.checkCompleteRows()
+            self.addNewPiece()
         
     def createScreen(self):
         """Creates PyGame main screen surface and rectangle
@@ -69,7 +72,7 @@ class Game:
         return randomposition
     
     def getRandomrotation(self, structure):
-        """Piece method: Creates a random rotaed structure.
+        """Piece method: Creates a random rotated structure.
         """
         rotation = randint(1,4)
         array_structure = np.array(structure)
@@ -80,26 +83,61 @@ class Game:
         """Piece method: Generates a random Piece instance.
         """
         random_piece = choice(list(PIECES.keys()))
+        # random_piece = 'I'
         random_structure = PIECES.get(random_piece)
         random_structure = self.getRandomrotation(random_structure)
         x_position = self.getRandomPositionX(random_structure)
-        self.piece = Piece(group = self.active_pieces, field_rect = self.field_rect, initial_x = x_position)
+        self.piece = Piece(group = self.active_pieces, field_rect = self.field_rect, initial_x = x_position, field_data = self.field_data)
         self.piece.type = random_piece
         self.piece.structure = random_structure
         self.piece.color = choice(PIECES_COLORS)
+        self.id_counter += 1
+        self.piece.id = self.id_counter
         self.piece.createPiece()
     
-    def updatedField(self):
-        """Field method: Insert the Piece structure into the field data.
+    def updateFieldData(self):
+        """Field method: Insert the Piece structure into the field data. Update Field data.
         """
-        self.field_data[self.piece.y][self.piece.x] = 1
-        print(self.field_data)
+        aux_x = self.piece.x
+        aux_y = self.piece.y
+        for row in self.piece.structure:
+            for col in row:
+                if col == 1:
+                    self.field_data[aux_y][aux_x] = self.piece.id
+                aux_x += 1
+            aux_y += 1
+            aux_x=self.piece.x
+        self.static_pieces.add(self.piece)
 
-    def replacePiece(self):
+    def checkCompleteRows(self):
+        """Field and Piece method: Check for completed rows. Updates sprites in static_pieces and updates field data.
+        """
+        completed_row = None
+        for row_i, row in enumerate(self.field_data[::-1]):
+            if all(row):
+                colision_point_y = ROWS-1-row_i
+                completed_row = row
+                for sprite in self.static_pieces:
+                    if sprite.id in completed_row:
+                        rect_to_remove = colision_point_y - sprite.y
+                        sprite.structure.pop(rect_to_remove)
+                        if len(sprite.structure) > 0:
+                            sprite.createPiece(was_static = True)
+                        else: 
+                            sprite.kill()
+                self.field_data.pop(colision_point_y)
+                self.field_data.insert(0, [0] * COLUMNS)
+                for sprite in self.static_pieces:
+                    if sprite.y <= colision_point_y:
+                        sprite.rect.x = sprite.x * BLOCK_DIMENSION + sprite.x_offset
+                        sprite.y +=1
+                        sprite.rect.y = sprite.y * BLOCK_DIMENSION + sprite.y_offset
+                self.checkCompleteRows()
+                break
+
+    def addNewPiece(self):
         """Piece method: Replace the current Piece and generates a new one.
         """
-
-        self.static_pieces.add(self.piece)
         self.active_pieces.empty()
         self.generatePiece()
     

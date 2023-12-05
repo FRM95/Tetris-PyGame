@@ -1,5 +1,4 @@
 from sys import exit
-from pyautogui import size
 import pygame
 from game import Game
 
@@ -14,6 +13,7 @@ class Main:
 	def run(self):
 
 		while True:
+			
 			for event in pygame.event.get():
 
 				if event.type == pygame.QUIT:
@@ -30,7 +30,10 @@ class Main:
 
 					if event.key == pygame.K_s:
 						self.game.keyboardInput('DOWN')
-	
+
+					if event.key == pygame.K_SPACE:
+						self.game.keyboardInput('ROTATE')
+						
 			# display 
 			self.game.display()
 

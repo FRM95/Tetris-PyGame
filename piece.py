@@ -1,26 +1,32 @@
 from typing import Any
 import pygame
 from settings import *
+import numpy as np
 
 class Piece(pygame.sprite.Sprite):
 
-    def __init__(self, group, field_rect, initial_x:int = 0, initial_y:int = 0, time_lapse:float = DEFAULT_TIME_LAPSE) -> None:
+    def __init__(self, group, field_rect, initial_x:int = 0, initial_y:int = 0, time_lapse:float = DEFAULT_TIME_LAPSE, field_data = None) -> None:
         super().__init__(group)
         self.structure = None
         self.color = None
         self.type = None
+        self.id = None
         self.field_rect = field_rect
         self.x = initial_x
         self.y = initial_y
         self.time_lapse = time_lapse
+        self.field_data = field_data
+        self.time_movement = 0
 
-    def createPiece(self):
+    def createPiece(self, was_static = False):
         self.createImage()
         self.createRect()
-        self.time_movement = 0
         self.limit_x = (self.field_rect.left, self.field_rect.right)
         self.limit_y = (self.field_rect.top, self.field_rect.bottom)
-        self.final = False
+        if was_static:
+            self.final = True
+        else:
+            self.final = False
 
     def createImage(self):
         width = len(self.structure[0]) * BLOCK_DIMENSION
@@ -46,36 +52,70 @@ class Piece(pygame.sprite.Sprite):
             match movement:
                 case 'DOWN':
                     self.y += 1
-                case 'UP':
-                    self.y -= 1
                 case 'LEFT':
                     self.x -= 1
                 case 'RIGHT':
                     self.x += 1
+                case 'ROTATE':
+                    numpy_structure = np.array(self.structure)
+                    numpy_structure = np.rot90(numpy_structure, k=-1)
+                    self.structure = numpy_structure.tolist()
+                    self.createPiece()
+
+
             self.rect.x = self.x * BLOCK_DIMENSION + self.x_offset
             self.rect.y = self.y * BLOCK_DIMENSION + self.y_offset
-            print(self.x, self.y)
-            print('MOVEMENT DONE ' + movement)
+        print(self.x, self.y)
         return movement_allowed
             
     def movementAllowed(self, movement:str):
-            allowed_movement = True
-            match movement:
-                case 'DOWN':
-                    if self.rect.bottom >= self.limit_y[1]:
-                        allowed_movement = False
-                case 'UP':
-                    pass
-                case 'LEFT':
-                    if self.rect.left <= self.limit_x[0] or self.rect.bottom >= self.limit_y[1]:
-                        allowed_movement = False
-                case 'RIGHT':
-                    if self.rect.right >= self.limit_x[1] or self.rect.bottom >= self.limit_y[1]:
-                        allowed_movement = False
-            return allowed_movement
-    
-    def checkCollision(self):
-        pass
+        allowed_movement = True
+        match movement:
+            case 'DOWN':
+
+                for row_i, row in enumerate(self.structure):
+                    for col_i, col in enumerate(row):
+                        line_x = self.x+col_i
+                        line_y = self.y+row_i+1
+                        if col == 1 and line_y < ROWS:
+                            if self.field_data[line_y][line_x] != 0:
+                                allowed_movement = False 
+                                
+                if self.rect.bottom >= self.limit_y[1]:
+                    allowed_movement = False
+
+            case 'ROTATE':
+                pass
+
+            case 'LEFT':
+
+                for row_i, row in enumerate(self.structure):
+                    for col_i, col in enumerate(row):
+                        line_x = self.x + col_i -1
+                        line_y = self.y + row_i
+                        if col == 1 and line_x >= 0:
+                            if self.field_data[line_y][line_x] != 0:
+                                allowed_movement = False
+                            break
+
+                if self.rect.left <= self.limit_x[0] or self.rect.bottom >= self.limit_y[1]:
+                    allowed_movement = False
+
+            case 'RIGHT':
+ 
+                for row_i, row in enumerate(self.structure):
+                    for col_i, col in enumerate(row[::-1]):
+                        line_x = self.x + len(row) - col_i
+                        line_y = self.y + row_i
+                        if col == 1 and line_x < COLUMNS:
+                            if self.field_data[line_y][line_x] != 0:
+                                allowed_movement = False
+                            break
+
+                if self.rect.right >= self.limit_x[1] or self.rect.bottom >= self.limit_y[1]:
+                    allowed_movement = False
+                    
+        return allowed_movement
 
     def pieceFall(self):
         self.time_movement += self.time_lapse
