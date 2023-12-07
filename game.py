@@ -9,6 +9,7 @@ class Game:
     def __init__(self) -> None:
         self.id_counter = 0
         self.game_score = 0
+        self.initial_time_lapse = DEFAULT_TIME_LAPSE
         self.createScreen()
         self.createField()
         self.createLines()
@@ -26,7 +27,6 @@ class Game:
             self.updateFieldData()
             self.checkCompleteRows()
             self.addNewPiece()
-            print(self.field_data)
             print(self.game_score)
         
     def createScreen(self):
@@ -74,7 +74,7 @@ class Game:
 
         for row_i, row in enumerate(structure):
             if any(row):
-                initialY = -row_i
+                initialY = - row_i
                 len_row = len(row)
                 if len_row > max_structure:
                     max_structure = len_row
@@ -101,7 +101,14 @@ class Game:
         random_structure = PIECES.get(random_piece)
         random_structure = self.getRandomrotation(random_structure)
         x_position, y_position = self.getInitialAxisPosition(random_structure)
-        self.piece = Piece(group = self.active_pieces, field_rect = self.field_rect, initial_x = x_position, initial_y = y_position, field_data = self.field_data)
+
+        self.piece = Piece(group = self.active_pieces, 
+                           field_rect = self.field_rect, 
+                           initial_x = x_position, 
+                           initial_y = y_position, 
+                           time_lapse = self.initial_time_lapse, 
+                           field_data = self.field_data)
+        
         self.piece.type = random_piece
         self.piece.structure = random_structure
         self.piece.color = choice(PIECES_COLORS)
@@ -123,40 +130,47 @@ class Game:
             aux_x=self.piece.x
         self.static_pieces.add(self.piece)
 
-    def checkCompleteRows(self):
+    def checkCompleteRows(self, combo = 1):
         """Field and Piece method: Check for completed rows. Updates sprites in static_pieces and updates field data.
         """
-        completed_row = None
-        combo = 1
-        
+        row_found = False
+        sprites_to_move = set()
         for row_i, row in enumerate(self.field_data[::-1]):
-            if all(row):
 
+            if all(row) and not row_found:
                 colision_point_y = ROWS-1-row_i
-                completed_row = row
-
+                row_found = True
                 for sprite in self.static_pieces:
-                    if sprite.id in completed_row:
+                    if sprite.id in row:
                         rect_to_remove = colision_point_y - sprite.y
                         sprite.structure.pop(rect_to_remove)
-                        if len(sprite.structure) > 0 and all(sum(v) != 0 for v in sprite.structure):
+                        if len(sprite.structure) > 0 and any(sum(v) != 0 for v in sprite.structure):
                             sprite.createPiece(was_static = True)
+                            sprites_to_move.add(sprite.id)
                         else: 
                             sprite.kill()
+                continue
+            
+            if row_found:
+                for id in row:
+                    if id != 0:
+                        sprites_to_move.add(id)
 
-                self.field_data.pop(colision_point_y)
-                self.field_data.insert(0, [0] * COLUMNS)
-
+        if row_found:
+            for sprite_id in sprites_to_move:
                 for sprite in self.static_pieces:
-                    if sprite.y <= colision_point_y:
+                    if sprite.id == sprite_id:
                         sprite.rect.x = sprite.x * BLOCK_DIMENSION + sprite.x_offset
                         sprite.y +=1
                         sprite.rect.y = sprite.y * BLOCK_DIMENSION + sprite.y_offset
-
-                self.game_score += 50*combo
-                combo+=1
-                self.checkCompleteRows()
-                break
+            
+            self.field_data.pop(colision_point_y)
+            self.field_data.insert(0, [0] * COLUMNS)
+            self.game_score += 50 * combo
+            combo += 1
+            self.initial_time_lapse += 0.002
+            self.checkCompleteRows(combo)
+        
 
     def addNewPiece(self):
         """Piece method: Replace the current Piece and generates a new one.

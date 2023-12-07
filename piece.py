@@ -43,8 +43,9 @@ class Piece(pygame.sprite.Sprite):
                 if col == 1:
                     pygame.draw.rect(self.image, self.color, 
                         (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION))  
+                    
                 # if col == 0:
-                #         pygame.draw.rect(self.image, self.color, 
+                #         pygame.draw.rect(self.image, (70,70,70), 
                 #             (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION), width=1)    
                            
         self.rect = self.image.get_rect(topleft = (self.x * BLOCK_DIMENSION + self.x_offset, self.y * BLOCK_DIMENSION + self.y_offset))
@@ -90,11 +91,6 @@ class Piece(pygame.sprite.Sprite):
                             if self.field_data[line_y+1][line_x] != 0:
                                 allowed_movement = False 
                                 self.final = True
-                        
-                                
-                # if self.rect.bottom >= self.limit_y[1]:
-                #     allowed_movement = False
-                #     self.final = True
 
             case 'LEFT':
 
@@ -111,10 +107,6 @@ class Piece(pygame.sprite.Sprite):
                         elif col == 1 and line_x - 1 >= 0 and line_y >= 0:
                             if self.field_data[line_y][line_x - 1] != 0:
                                 allowed_movement = False
-                            
-
-                # if self.rect.left <= self.limit_x[0] or self.rect.bottom >= self.limit_y[1]:
-                #     allowed_movement = False
 
             case 'RIGHT':
  
@@ -130,10 +122,6 @@ class Piece(pygame.sprite.Sprite):
                         elif col == 1 and line_x < COLUMNS and line_y >= 0:
                             if self.field_data[line_y][line_x] != 0:
                                 allowed_movement = False
-                            
-                # if self.rect.right >= self.limit_x[1] or self.rect.bottom >= self.limit_y[1]:
-                #     allowed_movement = False
-
 
             case 'ROTATE':
 
