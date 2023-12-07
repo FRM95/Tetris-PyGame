@@ -8,6 +8,7 @@ class Game:
 
     def __init__(self) -> None:
         self.id_counter = 0
+        self.game_score = 0
         self.createScreen()
         self.createField()
         self.createLines()
@@ -25,6 +26,8 @@ class Game:
             self.updateFieldData()
             self.checkCompleteRows()
             self.addNewPiece()
+            print(self.field_data)
+            print(self.game_score)
         
     def createScreen(self):
         """Creates PyGame main screen surface and rectangle
@@ -62,14 +65,25 @@ class Game:
         self.active_pieces = pygame.sprite.GroupSingle()
         self.static_pieces = pygame.sprite.Group()
 
-    def getRandomPositionX(self, structure):
+    def getInitialAxisPosition(self, structure):
         """Piece method: Creates a random offset for x axis.
         """
-        max_structure = len(max(structure))
-        randomposition = randint(0,9)
-        if randomposition + max_structure > 10:
-            randomposition = 10 - max_structure
-        return randomposition
+        initialX = 0
+        initialY = 0
+        max_structure = 0
+
+        for row_i, row in enumerate(structure):
+            if any(row):
+                initialY = -row_i
+                len_row = len(row)
+                if len_row > max_structure:
+                    max_structure = len_row
+
+        initialX = randint(0,9)
+        if initialX + max_structure > 10:
+            initialX = 10 - max_structure
+
+        return initialX, initialY
     
     def getRandomrotation(self, structure):
         """Piece method: Creates a random rotated structure.
@@ -86,8 +100,8 @@ class Game:
         # random_piece = 'I'
         random_structure = PIECES.get(random_piece)
         random_structure = self.getRandomrotation(random_structure)
-        x_position = self.getRandomPositionX(random_structure)
-        self.piece = Piece(group = self.active_pieces, field_rect = self.field_rect, initial_x = x_position, field_data = self.field_data)
+        x_position, y_position = self.getInitialAxisPosition(random_structure)
+        self.piece = Piece(group = self.active_pieces, field_rect = self.field_rect, initial_x = x_position, initial_y = y_position, field_data = self.field_data)
         self.piece.type = random_piece
         self.piece.structure = random_structure
         self.piece.color = choice(PIECES_COLORS)
@@ -113,25 +127,34 @@ class Game:
         """Field and Piece method: Check for completed rows. Updates sprites in static_pieces and updates field data.
         """
         completed_row = None
+        combo = 1
+        
         for row_i, row in enumerate(self.field_data[::-1]):
             if all(row):
+
                 colision_point_y = ROWS-1-row_i
                 completed_row = row
+
                 for sprite in self.static_pieces:
                     if sprite.id in completed_row:
                         rect_to_remove = colision_point_y - sprite.y
                         sprite.structure.pop(rect_to_remove)
-                        if len(sprite.structure) > 0:
+                        if len(sprite.structure) > 0 and all(sum(v) != 0 for v in sprite.structure):
                             sprite.createPiece(was_static = True)
                         else: 
                             sprite.kill()
+
                 self.field_data.pop(colision_point_y)
                 self.field_data.insert(0, [0] * COLUMNS)
+
                 for sprite in self.static_pieces:
                     if sprite.y <= colision_point_y:
                         sprite.rect.x = sprite.x * BLOCK_DIMENSION + sprite.x_offset
                         sprite.y +=1
                         sprite.rect.y = sprite.y * BLOCK_DIMENSION + sprite.y_offset
+
+                self.game_score += 50*combo
+                combo+=1
                 self.checkCompleteRows()
                 break
 
