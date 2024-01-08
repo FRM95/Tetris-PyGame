@@ -1,158 +1,165 @@
-from typing import Any
 import pygame
 from settings import *
 import numpy as np
 
-class Piece(pygame.sprite.Sprite):
+class Block(pygame.sprite.Sprite):
 
-    def __init__(self, group, field_rect, initial_x:int = 0, initial_y:int = 0, time_lapse:float = DEFAULT_TIME_LAPSE, field_data = None) -> None:
+    def __init__(self, group, color, initial_position, field_data) -> None:
         super().__init__(group)
-        self.structure = None
-        self.color = None
-        self.type = None
-        self.id = None
-        self.field_rect = field_rect
-        self.x = initial_x
-        self.y = initial_y
-        self.time_lapse = time_lapse
+        self.image = pygame.Surface((BLOCK_DIMENSION, BLOCK_DIMENSION))
+        self.image.fill(color)
+        self.x = initial_position[0]
+        self.y = initial_position[1]
         self.field_data = field_data
-        self.time_movement = 0
+        self.rect = self.image.get_rect(topleft = (self.x * BLOCK_DIMENSION, self.y * BLOCK_DIMENSION))
 
-    def createPiece(self, was_static = False):
-        self.createImage()
-        self.createRect()
-        self.limit_x = (self.field_rect.left, self.field_rect.right)
-        self.limit_y = (self.field_rect.top, self.field_rect.bottom)
-        if was_static:
-            self.final = True
+    def allowedBottom(self):
+        if (self.y >= ROWS - 1) or (self.y < ROWS - 1 and self.field_data[self.y+1][self.x] == 1):
+            return False
+        else: 
+            return True
+
+    def allowedLeft(self):
+        if (self.x <= 0) or (self.x > 0 and self.field_data[self.y][self.x-1] == 1):
+            return False
+        else: 
+            return True
+        
+    def allowedRight(self):
+        if (self.x >= COLUMNS - 1) or (self.x < COLUMNS - 1 and self.field_data[self.y][self.x+1] == 1):
+            return False
+        else: 
+            return True
+        
+    def allowedRotate(self, block):
+        if (block[0] < 0 or block[0] > COLUMNS - 1) or (block[1] < 0 or block[1] > ROWS - 1) or self.field_data[block[1]][block[0]] == 1:
+            return False
         else:
-            self.final = False
+            return True
 
-    def createImage(self):
-        width = len(self.structure[0]) * BLOCK_DIMENSION
-        height = len(self.structure) * BLOCK_DIMENSION
-        self.image = pygame.surface.Surface((width, height)).convert_alpha()
-        self.image.fill((0,255,0))
-        self.image.set_colorkey((0,255,0))
+    def update(self):
+        self.rect.x = self.x * BLOCK_DIMENSION
+        self.rect.y = self.y * BLOCK_DIMENSION
 
-    def createRect(self):
-        self.x_offset = self.field_rect.left
-        self.y_offset = self.field_rect.top
+class Tetromino:
+
+    def __init__(self, group, color, structure, x_offset = 0, y_offset = 0, time_lapse = 0, field_data = None) -> None:
+        self.structure = structure
+        self.color = color
+        self.group = group
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.block_positions, self.figure_positions = self.initialPositions()
+        self.blocks = [Block(self.group, self.color, pos, field_data) for pos in self.block_positions]
+        self.time_lapse = time_lapse
+        self.time_movement = 0
+        
+    def initialPositions(self):
+        block_list = []
+        full_block_list = []
         for i_row, row in enumerate(self.structure):
+            row_list = []
             for i_col, col in enumerate(row):
                 if col == 1:
-                    pygame.draw.rect(self.image, self.color, 
-                        (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION))  
-                    
-                # if col == 0:
-                #         pygame.draw.rect(self.image, (70,70,70), 
-                #             (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION), width=1)    
-                           
-        self.rect = self.image.get_rect(topleft = (self.x * BLOCK_DIMENSION + self.x_offset, self.y * BLOCK_DIMENSION + self.y_offset))
-        self.mask = pygame.mask.from_surface(self.image)
-
+                    block_list.append((i_col + self.x_offset, i_row + self.y_offset))
+                row_list.append((i_col + self.x_offset, i_row + self.y_offset))
+            full_block_list.append(row_list)
+        return block_list, full_block_list
+    
     def movePiece(self, movement:str):
-        movement_allowed = self.movementAllowed(movement)
-        if movement_allowed:
-            match movement:
-                case 'DOWN':
-                    self.y += 1
-                case 'LEFT':
-                    self.x -= 1
-                case 'RIGHT':
-                    self.x += 1
-                case 'ROTATE':
-                    numpy_structure = np.array(self.structure)
-                    numpy_structure = np.rot90(numpy_structure, k=-1)
-                    self.structure = numpy_structure.tolist()
-                    self.createPiece()
 
-            self.rect.x = self.x * BLOCK_DIMENSION + self.x_offset
-            self.rect.y = self.y * BLOCK_DIMENSION + self.y_offset
-
-        return movement_allowed
-            
-    def movementAllowed(self, movement:str):
-        allowed_movement = True
         match movement:
+
             case 'DOWN':
 
-                for row_i, row in enumerate(self.structure):
+                for block in self.blocks:
+                    if not block.allowedBottom():
+                        return False
+                
+                for block in self.blocks:
+                    block.y+=1
+                    block.update()
+                
+                for row_i, row in enumerate(self.figure_positions):
                     for col_i, col in enumerate(row):
-
-                        line_x = self.x+col_i
-                        line_y = self.y+row_i
-
-                        if col == 1 and line_y == ROWS-1:
-                            allowed_movement = False 
-                            self.final = True
-
-                        elif col == 1 and line_y+1 < ROWS and line_y >= 0:
-                            if self.field_data[line_y+1][line_x] != 0:
-                                allowed_movement = False 
-                                self.final = True
+                        new_val = (col[0], col[1]+1)
+                        self.figure_positions[row_i][col_i] = new_val
 
             case 'LEFT':
+                
+                for block in self.blocks:
+                    if not block.allowedLeft():
+                        return False
 
-                for row_i, row in enumerate(self.structure):
-
+                for block in self.blocks:
+                    block.x-=1
+                    block.update()
+                
+                for row_i, row in enumerate(self.figure_positions):
                     for col_i, col in enumerate(row):
-
-                        line_x = self.x + col_i
-                        line_y = self.y + row_i
-
-                        if col == 1 and line_x == 0:
-                            allowed_movement = False 
-
-                        elif col == 1 and line_x - 1 >= 0 and line_y >= 0:
-                            if self.field_data[line_y][line_x - 1] != 0:
-                                allowed_movement = False
-
+                        new_val = (col[0]-1, col[1])
+                        self.figure_positions[row_i][col_i] = new_val
+                        
             case 'RIGHT':
- 
-                for row_i, row in enumerate(self.structure):
-                    for col_i, col in enumerate(row[::-1]):
 
-                        line_x = self.x + len(row) - col_i
-                        line_y = self.y + row_i
+                for block in self.blocks:
+                    if not block.allowedRight():
+                        return False
 
-                        if col == 1 and line_x >= COLUMNS:
-                            allowed_movement = False
+                for block in self.blocks:
+                    block.x+=1
+                    block.update()
 
-                        elif col == 1 and line_x < COLUMNS and line_y >= 0:
-                            if self.field_data[line_y][line_x] != 0:
-                                allowed_movement = False
-
-            case 'ROTATE':
-
-                if self.type != 'O':
-                    for row_i, row in enumerate(self.structure):
-                        for col_i, col in enumerate(row):
-                            if col == 0:
-                                line_x = self.x + col_i
-                                line_y = self.y + row_i
-
-                                if line_x < 0 or line_x >= COLUMNS:
-                                    allowed_movement = False 
-
-                                elif line_y < 0 or line_y >= ROWS:
-                                    allowed_movement = False 
-
-                                elif self.field_data[line_y][line_x] != 0:
-                                    allowed_movement = False
-                    
-        return allowed_movement
-
-    def pieceFall(self):
-        self.time_movement += self.time_lapse
-        if self.time_movement >= 1:
-            if not self.movePiece('DOWN'):
-                self.final = True
-            self.time_movement = 0
+                for row_i, row in enumerate(self.figure_positions):
+                    for col_i, col in enumerate(row):
+                        new_val = (col[0]+1, col[1])
+                        self.figure_positions[row_i][col_i] = new_val
             
-    def update(self):
-        if not self.final:
-            self.pieceFall()
-        
-       
+            case 'ROTATE':
+                rotated_structure = self.rotateTetronimo(self.structure)
+                aux_blocks = self.recreateBlocksList(rotated_structure, self.figure_positions)
+                for auxliar_block in aux_blocks:
+                    if not self.blocks[0].allowedRotate(auxliar_block):
+                        return False
+
+                for block_index, block in enumerate(self.blocks):
+                    block.x = aux_blocks[block_index][0]
+                    block.y = aux_blocks[block_index][1]
+                    block.update()
+                self.structure = rotated_structure
+
+        return True
     
+    def rotateTetronimo(self, structure:list):
+        aux_structure = np.rot90(structure, k = -1)
+        return aux_structure.tolist()
+        
+    def recreateBlocksList(self, structure:list, figure:list):
+        new_blocks = []
+        for i_row, row in enumerate(structure):
+            for i_col, col in enumerate(row):
+                if col==1:
+                    new_blocks.append(figure[i_row][i_col])
+        return new_blocks
+        
+    # def pieceFall(self):
+    #     self.time_movement += self.time_lapse
+    #     if self.time_movement >= 1:
+    #         piece_falling = self.movePiece('DOWN')
+    #         self.time_movement = 0
+    #         return piece_falling
+    #     else:
+    #         return True
+        
+    def pieceFall(self):
+        piece_falling = self.movePiece('DOWN')
+        return piece_falling
+      
+            
+
+
+
+                
+        
+        
+        

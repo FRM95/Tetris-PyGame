@@ -9,6 +9,7 @@ class Main:
 		pygame.display.set_caption('Tetris')
 		self.game = Game()
 		self.clock = pygame.time.Clock()
+		self.started = False
 
 	def run(self):
 
@@ -19,23 +20,18 @@ class Main:
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					exit()
-
+				
 				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_F1:
+						self.started = True
 
-					if event.key == pygame.K_a:
-						self.game.keyboardInput('LEFT')
+			if self.started:
 
-					if event.key == pygame.K_d:
-						self.game.keyboardInput('RIGHT')
+				# display 
+				self.game.display()
 
-					if event.key == pygame.K_s:
-						self.game.keyboardInput('DOWN')
-
-					if event.key == pygame.K_SPACE:
-						self.game.keyboardInput('ROTATE')
-						
-			# display 
-			self.game.display()
+				# input 
+				self.game.keyboardInput()
 
 			# updating the game
 			pygame.display.update()
