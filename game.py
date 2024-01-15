@@ -12,6 +12,7 @@ class Game:
         self.createScreen()
         self.createField()
         self.createLines()
+        self.initiateScore()
         self.createScoreField()
         self.createPreviewField()
         self.createSpritesGroup()
@@ -41,6 +42,13 @@ class Game:
         self.main_screen_surface.blit(self.field_surface, self.field_rect)
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
         self.main_screen_surface.blit(self.score_surface, self.score_rect)
+
+        self.main_screen_surface.blit(self.score_text_surface, self.score_text_rect)
+        self.main_screen_surface.blit(self.points_text_surface, self.points_text_rect)
+
+        self.main_screen_surface.blit(self.level_text_surface, self.level_text_rect)
+        self.main_screen_surface.blit(self.level_number_surface, self.level_number_rect)
+
         self.main_screen_surface.blit(self.preview_surface, self.preview_rect)
         self.main_screen_surface.blit(self.preview_text_surface, self.preview_text_rect)
         self.main_screen_surface.blit(self.next_piece_surface, self.next_piece_rect)
@@ -83,10 +91,24 @@ class Game:
         """Creates Score Field surface
         """
         score_coordinates = (self.field_rect.right + 30, self.field_rect.top)
-        score_object = Score(score_coordinates, WIDHT_SCORE_FIELD, HEIGHT_SCORE_FIELD)
-        score_object.addBorderLine(BORDER_LINE_COLOR)
-        self.score_surface = score_object.surface
-        self.score_rect = score_object.rect
+        self.score_object = Score(score_coordinates, WIDHT_SCORE_FIELD, HEIGHT_SCORE_FIELD)
+        self.score_object.addBorderLine(BORDER_LINE_COLOR)
+        self.score_surface = self.score_object.surface
+        self.score_rect = self.score_object.rect
+
+        self.score_text_surface, self.score_text_rect = self.score_object.createText('Score', size = SCORE_FONT_SIZE)
+        self.score_text_rect.midtop = (self.score_rect.midtop[0], self.score_rect.midtop[1] + BLOCK_DIMENSION * 0.6)
+        self.score_object.displayScore(self.game_score)
+        self.points_text_surface = self.score_object.points_surface
+        self.points_text_rect = self.score_object.points_rect
+        self.points_text_rect.midtop = (self.score_text_rect.midtop[0], self.score_text_rect.midtop[1] + BLOCK_DIMENSION)
+
+        self.level_text_surface, self.level_text_rect = self.score_object.createText('Level', size = SCORE_FONT_SIZE)
+        self.level_text_rect.midtop = (self.points_text_rect.midtop[0], self.points_text_rect.midtop[1] + BLOCK_DIMENSION * 1.1)
+        self.score_object.displayLevel(self.game_level)
+        self.level_number_surface = self.score_object.level_surface
+        self.level_number_rect = self.score_object.level_rect
+        self.level_number_rect.midtop = (self.level_text_rect.midtop[0], self.level_text_rect.midtop[1] + BLOCK_DIMENSION)
 
     def createPreviewField(self):
         """Creates Score Field surface
@@ -120,9 +142,13 @@ class Game:
 
     def checkRow(self):
         found_row = False
+        combo = 0
+
         for row_index, row in enumerate(self.field_data[::-1]):
             if all(row):
                 found_row = True
+                self.lines_cleared += 1
+                combo +=1
                 row_index = ROWS - 1 - row_index
                 self.field_data.pop(row_index)
                 self.field_data.insert(0, [0] * COLUMNS)
@@ -133,8 +159,12 @@ class Game:
                         block.y += 1
                         block.update()
                 break
+
         if found_row:
             self.checkRow()
+
+        if combo != 0:
+            self.updateGameStatus(combo)
 
     def setNextPieces(self):
         figure = choice(PIECES_LIST)
@@ -155,6 +185,7 @@ class Game:
                             y_offset = y_offset, 
                             time_lapse = DEFAULT_TIME_LAPSE, 
                             field_data = self.field_data)
+        
         new_figure = choice(PIECES_LIST)
         new_item = (PIECES.get(new_figure), PIECES_COLORS.get(new_figure))
         self.nextPiece.updateItem(new_item)
@@ -209,6 +240,32 @@ class Game:
         if self.down_pressed and not keys[pygame.K_s]:
             self.down_pressed = False
             self.timers['MOVE_DOWN'].duration = self.down_speed
+
+    def initiateScore(self):
+        self.game_score = 0
+        self.game_level = 0
+        self.lines_cleared = 0
+
+    def updateGameStatus(self, combo:int):
+        current_level = self.lines_cleared//10
+        points_earned = POINTS.get(combo) * (current_level + 1)
+        self.game_score += points_earned
+
+        self.score_object.updateScore(self.game_score)
+        self.points_text_surface = self.score_object.points_surface
+        self.points_text_rect = self.score_object.points_rect
+        self.points_text_rect.midtop = (self.score_text_rect.midtop[0], self.score_text_rect.midtop[1] + BLOCK_DIMENSION)
+
+        if self.game_level != current_level:
+            self.game_level = current_level
+            self.score_object.updateLevel(self.game_level)
+            self.level_number_surface = self.score_object.level_surface
+            self.level_number_rect = self.score_object.level_rect
+            self.level_number_rect.midtop = (self.level_text_rect.midtop[0], self.level_text_rect.midtop[1] + BLOCK_DIMENSION)
+            self.down_speed = self.down_speed * 0.75
+            self.down_speed_faster = self.down_speed * 0.1
+        
+
         
         
 
