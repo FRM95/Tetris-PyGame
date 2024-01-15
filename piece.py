@@ -43,7 +43,7 @@ class Block(pygame.sprite.Sprite):
 
 class Tetromino:
 
-    def __init__(self, group, color, structure, x_offset = 0, y_offset = 0, time_lapse = 0, field_data = None) -> None:
+    def __init__(self, group, color, structure, x_offset = 0, y_offset = 0, field_data = None) -> None:
         self.structure = structure
         self.color = color
         self.group = group
@@ -51,8 +51,6 @@ class Tetromino:
         self.y_offset = y_offset
         self.block_positions, self.figure_positions = self.initialPositions()
         self.blocks = [Block(self.group, self.color, pos, field_data) for pos in self.block_positions]
-        self.time_lapse = time_lapse
-        self.time_movement = 0
         
     def initialPositions(self):
         block_list = []
@@ -141,15 +139,6 @@ class Tetromino:
                 if col==1:
                     new_blocks.append(figure[i_row][i_col])
         return new_blocks
-        
-    # def pieceFall(self):
-    #     self.time_movement += self.time_lapse
-    #     if self.time_movement >= 1:
-    #         piece_falling = self.movePiece('DOWN')
-    #         self.time_movement = 0
-    #         return piece_falling
-    #     else:
-    #         return True
         
     def pieceFall(self):
         piece_falling = self.movePiece('DOWN')

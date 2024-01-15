@@ -183,7 +183,6 @@ class Game:
                             random_figure, 
                             x_offset = x_offset,
                             y_offset = y_offset, 
-                            time_lapse = DEFAULT_TIME_LAPSE, 
                             field_data = self.field_data)
         
         new_figure = choice(PIECES_LIST)
