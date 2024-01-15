@@ -4,7 +4,7 @@ from settings import *
 from piece import Tetromino
 from pygame_timer import Timer
 from score import Score
-from preview import Preview
+from preview import Preview, NextPiece
 
 class Game:
 
@@ -41,9 +41,9 @@ class Game:
         self.main_screen_surface.blit(self.field_surface, self.field_rect)
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
         self.main_screen_surface.blit(self.score_surface, self.score_rect)
-        self.main_screen_surface.blit(self.score_line, self.score_rect)
         self.main_screen_surface.blit(self.preview_surface, self.preview_rect)
-        self.main_screen_surface.blit(self.preview_line, self.preview_rect)
+        self.main_screen_surface.blit(self.preview_text_surface, self.preview_text_rect)
+        self.main_screen_surface.blit(self.next_piece_surface, self.next_piece_rect)
         self.timerUpdate()
     
     def movePiece(self):
@@ -84,20 +84,22 @@ class Game:
         """
         score_coordinates = (self.field_rect.right + 30, self.field_rect.top)
         score_object = Score(score_coordinates, WIDHT_SCORE_FIELD, HEIGHT_SCORE_FIELD)
-        score_object.createLine()
+        score_object.addBorderLine(BORDER_LINE_COLOR)
         self.score_surface = score_object.surface
         self.score_rect = score_object.rect
-        self.score_line = score_object.line_surface
 
     def createPreviewField(self):
         """Creates Score Field surface
         """
         preview_coordinates = (self.field_rect.right + 30, self.score_rect.bottom + 10)
         preview_object = Preview(preview_coordinates, WIDHT_PREVIEW_FIELD, HEIGHT_PREVIEW_FIELD)
-        preview_object.createLine()
+        preview_object.addBorderLine(BORDER_LINE_COLOR)
         self.preview_surface = preview_object.surface
         self.preview_rect = preview_object.rect
-        self.preview_line = preview_object.line_surface
+        preview_object.createText('Next', size = PREVIEW_FONT_SIZE)
+        self.preview_text_surface = preview_object.text_surface
+        self.preview_text_rect = preview_object.text_rect
+        self.preview_text_rect.midtop = (self.preview_rect.midtop[0], self.preview_rect.midtop[1] + BLOCK_DIMENSION * 0.6)
 
     def createSpritesGroup(self):
         self.active_pieces = pygame.sprite.Group()
@@ -135,21 +137,15 @@ class Game:
             self.checkRow()
 
     def setNextPieces(self):
-        self.nextPieces = [choice(PIECES_LIST) for _ in range(3)]
-
-    # def drawNextPieces(self):
-    #     for nextPiece in self.nextPieces:
-    #         for i_row, row in enumerate(nextPiece):
-    #             for i_col, col in enumerate(row):
-    #                 if col == 1:
-    #                     pygame.draw.rect(self.image, self.color, 
-    #                         (BLOCK_DIMENSION * i_col, BLOCK_DIMENSION * i_row, BLOCK_DIMENSION, BLOCK_DIMENSION)
+        figure = choice(PIECES_LIST)
+        item = (PIECES.get(figure), PIECES_COLORS.get(figure))
+        self.nextPiece = NextPiece(item)
 
     def createPiece(self):
-        random_color = choice(PIECES_COLORS)
         # random_figure = PIECES.get(choice(['I', 'O', 'T', 'L', 'J', 'S', 'Z']))
-        random_figure = PIECES.get(self.nextPieces.pop(0))
-        self.nextPieces.append(choice(PIECES_LIST))
+        next_item = self.nextPiece.getItem()
+        random_figure = next_item[0]
+        random_color = next_item[1]
         x_offset = self.calculateXOffset(random_figure)
         y_offset = self.calculateYOffset(random_figure)
         self.piece = Tetromino(self.active_pieces, 
@@ -159,7 +155,12 @@ class Game:
                             y_offset = y_offset, 
                             time_lapse = DEFAULT_TIME_LAPSE, 
                             field_data = self.field_data)
-        print(self.nextPieces)
+        new_figure = choice(PIECES_LIST)
+        new_item = (PIECES.get(new_figure), PIECES_COLORS.get(new_figure))
+        self.nextPiece.updateItem(new_item)
+        self.next_piece_surface = self.nextPiece.drawNextPiece()
+        self.next_piece_rect = self.nextPiece.getRect()
+        self.next_piece_rect.midtop = (self.preview_text_rect.midtop[0], self.preview_text_rect.midtop[1] + BLOCK_DIMENSION * 1.5)
 
     def calculateYOffset(self, figure:list):
         y_offset = 0

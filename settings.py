@@ -19,12 +19,12 @@ HEIGHT_SCORE_FIELD  = WIDHT_SCORE_FIELD
 
 # PREVIEW SIZE 
 WIDHT_PREVIEW_FIELD = WIDHT_SCORE_FIELD
-HEIGHT_PREVIEW_FIELD  = HEIGHT_FIELD - HEIGHT_SCORE_FIELD - 10
+HEIGHT_PREVIEW_FIELD  = HEIGHT_SCORE_FIELD * 1.3
 
 # PIECE
 BLOCK_DIMENSION = WIDTH_FIELD // 10
 PIECES = {
-    'I':[[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
+    'I':[[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
     'O':[[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]],
     'T':[[0,0,0],[1,1,1],[0,1,0]],
     'L':[[0,1,0],[0,1,0],[0,1,1]],
@@ -32,6 +32,17 @@ PIECES = {
     'S':[[0,0,0],[0,1,1],[1,1,0]],
     'Z':[[0,0,0],[1,1,0],[0,1,1]]
 }
+
+PIECES_COLORS = {
+    'I':(219, 67, 95),
+    'O':(229, 145, 61),
+    'T':(237, 218, 18),
+    'L':(155, 13, 120),
+    'J':(2, 168, 229),
+    'S':(171, 129, 226),
+    'Z':(112, 216, 157)
+}
+
 PIECES_LIST = ['I', 'O', 'T', 'L', 'J', 'S', 'Z']
 
 DEFAULT_TIME_LAPSE = 0.1
@@ -43,21 +54,12 @@ FIELD_SURFACE_COLOR = (13, 13, 13)
 LINE_SURFACE_COLOR = (0, 255, 0)
 BORDER_LINE_COLOR = (200, 200, 200)
 LINE_COLOR = (100, 100, 100)
-
-# PIECES COLOR
-PIECES_COLORS = [
-    (219, 67, 95),
-    (112, 216, 157),
-    (2, 168, 229),
-    (181, 10, 204),
-    (237, 218, 18),
-    (63, 198, 151),
-    (155, 13, 120),
-    (171, 129, 226),
-    (229, 145, 61)
-]
+TEXT_COLOR = ()
 
 # TIMERS
 UPDATE_START_SPEED = 500
 MOVE_WAIT_TIME = 180
 ROTATE_WAIT_TIME = 180
+
+# TEXT SIZE
+PREVIEW_FONT_SIZE = round(BLOCK_DIMENSION * 0.6)
