@@ -172,7 +172,6 @@ class Game:
         self.nextPiece = NextPiece(item)
 
     def createPiece(self):
-        # random_figure = PIECES.get(choice(['I', 'O', 'T', 'L', 'J', 'S', 'Z']))
         next_item = self.nextPiece.getItem()
         random_figure = next_item[0]
         random_color = next_item[1]
