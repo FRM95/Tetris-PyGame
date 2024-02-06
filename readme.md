@@ -1,6 +1,6 @@
 PyGame Tetris Game
 
-Welcome everyone to my very first game, written entirely in Python.
+Welcome everyone to my very first game, written entirely in Python 3.11.5.
 After completing the Tetris technical interview solution, I decided to make a complete Tetris to face a new challenge.
 
 This project was made with the [PyGame](https://www.pygame.org/wiki/GettingStarted) library, go and check them for more!
