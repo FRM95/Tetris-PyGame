@@ -7,7 +7,7 @@ class Preview(CustomSurface):
     def __init__(self, coordinates, width, height) -> None:
         super().__init__(coordinates, width, height)
 
-    def createText(self, input:str = "", color:tuple = (255,255,255), background_color:tuple = (0,0,0), size:int = 32):
+    def createText(self, input:str = "", color:tuple = (255,255,255), background_color = None, size:int = 32):
         font_text = font.Font('freesansbold.ttf', size)
         self.text_surface = font_text.render(input, True, color, background_color).convert_alpha()
         self.text_rect = self.text_surface.get_rect()

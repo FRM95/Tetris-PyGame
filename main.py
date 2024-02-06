@@ -22,16 +22,31 @@ class Main:
 					exit()
 				
 				if event.type == pygame.KEYDOWN:
-					if event.key == pygame.K_F1:
+
+					# First start
+					if event.key == pygame.K_F1 and not self.game.game_over:
 						self.started = True
+						self.game.resetScreen()
+
+					# If game over, goes to start menu
+					if event.key == pygame.K_F1 and self.game.game_over:
+						self.game = Game()
+						self.started = False
+
+					# If game over, start a new game
+					if event.key == pygame.K_F2 and self.game.game_over:
+						self.game = Game()
+						self.game.resetScreen()
 
 			if self.started:
 
 				# display 
 				self.game.display()
 
-				# input 
-				self.game.keyboardInput()
+				# input and timers
+				if not self.game.game_over:
+					self.game.timerUpdate()
+					self.game.keyboardInput()
 
 			# updating the game
 			pygame.display.update()

@@ -5,11 +5,13 @@ from piece import Tetromino
 from pygame_timer import Timer
 from score import Score
 from preview import Preview, NextPiece
+from pygame import font
 
 class Game:
 
     def __init__(self) -> None:
         self.createScreen()
+        self.createInitialText()
         self.createField()
         self.createLines()
         self.initiateScore()
@@ -42,17 +44,19 @@ class Game:
         self.main_screen_surface.blit(self.field_surface, self.field_rect)
         self.main_screen_surface.blit(self.line_surface, self.field_rect)
         self.main_screen_surface.blit(self.score_surface, self.score_rect)
-
         self.main_screen_surface.blit(self.score_text_surface, self.score_text_rect)
         self.main_screen_surface.blit(self.points_text_surface, self.points_text_rect)
-
         self.main_screen_surface.blit(self.level_text_surface, self.level_text_rect)
         self.main_screen_surface.blit(self.level_number_surface, self.level_number_rect)
-
         self.main_screen_surface.blit(self.preview_surface, self.preview_rect)
         self.main_screen_surface.blit(self.preview_text_surface, self.preview_text_rect)
         self.main_screen_surface.blit(self.next_piece_surface, self.next_piece_rect)
-        self.timerUpdate()
+
+        if self.game_over:
+            self.main_screen_surface.blit(self.transparent_surf, (0,0))
+            self.main_screen_surface.blit(self.game_over_text, self.game_over_text_rect)
+            self.main_screen_surface.blit(self.ended_menu, self.ended_menu_rect)
+            self.main_screen_surface.blit(self.ended_restart, self.ended_restart_rect)
     
     def movePiece(self):
         if not self.piece.pieceFall():
@@ -64,7 +68,36 @@ class Game:
         self.main_screen_surface = pygame.display.set_mode((WIDTH_SCREEN, HEIGHT_SCREEN))
         self.main_screen_rect = self.main_screen_surface.get_rect()
         self.main_screen_surface.fill(MAIN_SCREEN_SURFACE_COLOR)
-        
+
+    def resetScreen(self):
+        self.main_screen_surface.fill(MAIN_SCREEN_SURFACE_COLOR)
+
+    def createInitialText(self):
+        font_text = font.Font('freesansbold.ttf', 30)
+        title = font_text.render("Welcome to Pygame Tetris", True, (255,255,255), None).convert_alpha()
+        font_text = font.Font('freesansbold.ttf', 20)
+        credits = font_text.render("GitHub: @FRM95", True, (255,255,255), None).convert_alpha()
+        font_text = font.Font('freesansbold.ttf', 32)
+        start = font_text.render("Press F1 to Start! :)", True, (255,255,255), None).convert_alpha()
+        font_text = font.Font('freesansbold.ttf', 24)
+        control = font_text.render("Piece movement: WASD keys", True, (255,255,255), None).convert_alpha()
+        control2 = font_text.render("Piece rotation: Space key", True, (255,255,255), None).convert_alpha()
+        title_rect = title.get_rect()
+        title_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery // 1.5)
+        credits_rect = credits.get_rect()
+        credits_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery // 1.3)
+        start_rect = start.get_rect()
+        start_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery)
+        control_rect = control.get_rect()
+        control_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery * 1.2)
+        control2_rect = control2.get_rect()
+        control2_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery * 1.3)
+        self.main_screen_surface.blit(title, title_rect)
+        self.main_screen_surface.blit(credits, credits_rect)
+        self.main_screen_surface.blit(start, start_rect)
+        self.main_screen_surface.blit(control, control_rect)
+        self.main_screen_surface.blit(control2, control2_rect)
+
     def createField(self):
         """Creates Game Field surface, rectangle and data
         """
@@ -131,7 +164,7 @@ class Game:
         for block in self.piece.blocks:
             if block.y <= 0:
                 self.game_over = True
-                print(self.game_over)
+                self.endedGame()
                 return False
             else:
                 self.field_data[block.y][block.x] = 1
@@ -243,7 +276,23 @@ class Game:
         self.game_score = 0
         self.game_level = 0
         self.lines_cleared = 0
+        self.game_over = False
 
+    def endedGame(self):
+        font_text = font.Font('freesansbold.ttf', 34)
+        self.game_over_text = font_text.render("GAME OVER :(", True, (255,255,255), None).convert_alpha()
+        font_text = font.Font('freesansbold.ttf', 28)
+        self.ended_menu = font_text.render("Press F1 to go back to menu", True, (255,255,255), None).convert_alpha()
+        self.ended_restart = font_text.render("Press F2 to start a new game", True, (255,255,255), None).convert_alpha()
+        self.game_over_text_rect = self.game_over_text.get_rect()
+        self.ended_menu_rect = self.ended_menu.get_rect()
+        self.ended_restart_rect = self.ended_restart.get_rect()
+        self.game_over_text_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery // 1.5)
+        self.ended_menu_rect.midtop = (self.game_over_text_rect.centerx, self.game_over_text_rect.bottom + self.game_over_text_rect.height * 1.5)
+        self.ended_restart_rect.midtop = (self.ended_menu_rect.centerx, self.ended_menu_rect.bottom + 10)
+        self.transparent_surf = pygame.Surface((WIDTH_SCREEN, HEIGHT_SCREEN), pygame.SRCALPHA, 32).convert_alpha()
+        self.transparent_surf.fill((0,0,0,200))
+        
     def updateGameStatus(self, combo:int):
         current_level = self.lines_cleared//10
         points_earned = POINTS.get(combo) * (current_level + 1)
@@ -262,7 +311,7 @@ class Game:
             self.level_number_rect.midtop = (self.level_text_rect.midtop[0], self.level_text_rect.midtop[1] + BLOCK_DIMENSION)
             self.down_speed = self.down_speed * 0.75
             self.down_speed_faster = self.down_speed * 0.1
-        
+
 
         
         
