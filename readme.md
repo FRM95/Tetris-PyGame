@@ -8,7 +8,7 @@ Such a beautiful way to make games in Python, thanks to the PyGame Team and cont
 
 How to play:
 1. Install dependencies in requirements.txt
-2. Initiate main.py file
+2. Run main.py file
 3. Pieces movement with keyboard keys: "s" (down), "d" (right), "a" (left), and "space" (rotate).
 
 
