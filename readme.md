@@ -2,4 +2,4 @@ PyGame Tetris Game
 
 Written in Python 
 
-![pygame_tetris](https://github.com/FRM95/Tetris-PyGame/assets/45168574/2d8db554-d48d-4e37-a042-f773ca3d943f)
+![pygame_tetris](https://github.com/FRM95/Tetris-PyGame/assets/45168574/07b6e9ca-663b-4a69-aadf-6b4bdf2bf2f1)
