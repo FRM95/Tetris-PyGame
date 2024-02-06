@@ -11,7 +11,7 @@ I want to thank also to [@programmingwithnick](https://www.youtube.com/@programm
 How to play:
 1. Install dependencies in requirements.txt
 2. Run main.py file
-3. Pieces movement with keyboard keys: "s" (down), "d" (right), "a" (left), and "space" (rotate).
+3. Pieces movement with keyboard keys: "S" (down), "D" (right), "A" (left), and "SPACE" (rotation).
 
 
 Game example:
