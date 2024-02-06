@@ -80,7 +80,7 @@ class Game:
         font_text = font.Font('freesansbold.ttf', 32)
         start = font_text.render("Press F1 to Start! :)", True, (255,255,255), None).convert_alpha()
         font_text = font.Font('freesansbold.ttf', 24)
-        control = font_text.render("Piece movement: WASD keys", True, (255,255,255), None).convert_alpha()
+        control = font_text.render("Piece movement: A (left), S (down) and D (right) keys", True, (255,255,255), None).convert_alpha()
         control2 = font_text.render("Piece rotation: Space key", True, (255,255,255), None).convert_alpha()
         title_rect = title.get_rect()
         title_rect.center = (self.main_screen_rect.centerx, self.main_screen_rect.centery // 1.5)
