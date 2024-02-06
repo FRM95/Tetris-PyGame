@@ -1,5 +1,17 @@
 PyGame Tetris Game
 
-Written in Python 
+Welcome everyone to my very first game, written entirely in Python.
+After completing the Tetris technical interview solution, I decided to make a complete Tetris to face a new challenge.
 
-![pygame_tetris](https://github.com/FRM95/Tetris-PyGame/assets/45168574/07b6e9ca-663b-4a69-aadf-6b4bdf2bf2f1)
+This project was made with the [PyGame](https://www.pygame.org/wiki/GettingStarted) library, go and check them for more!
+Such a beautiful way to make games in Python, thanks to the PyGame Team and contributors.
+
+How to play:
+1. Install dependencies in requirements.txt
+2. Initiate main.py file
+3. Pieces movement with keyboard keys: "s" (down), "d" (right), "a" (left), and "space" (rotate).
+
+
+Game example:
+
+![pygame_tetris](https://github.com/FRM95/Tetris-PyGame/assets/45168574/c252ef1d-b0e8-44a5-8dde-e1cb04b3eeaa)
