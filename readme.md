@@ -6,7 +6,7 @@ After completing the Tetris technical interview solution, I decided to make a co
 This project was made with the [PyGame](https://www.pygame.org/wiki/GettingStarted) library, go and check them for more!
 Such a beautiful way to make games in Python, thanks to the PyGame Team and contributors.
 
-I want to thank also to [@programmingwithnick](https://www.youtube.com/@programmingwithnick) for giving me some ideas during this process.
+I also want to thank [@programmingwithnick](https://www.youtube.com/@programmingwithnick) for giving me some ideas during this process.
 
 How to play:
 1. Install dependencies in requirements.txt
